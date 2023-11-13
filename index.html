@@ -1,0 +1,86 @@
+<html>
+<head>
+	<title>Lab 4 Github</title>
+	<hr>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.7/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@0.7.7/dist/leaflet.js"></script>
+	<style>
+	#map{
+	width:1080;
+	height:1080;
+}
+
+header{
+	color:red;
+}	
+	</style>
+	<hr>
+	<header>NYC McDonald's map</header>
+	<hr>
+	<br>
+</head>
+<body>
+	<br>
+	<div id='map'></div>
+	<p>Map of McDonald's locations in NYC ranked by sales volume</p>
+
+	<script>
+	var map = L.map('map',{
+	center: [40.71, -74.00],
+    zoom: 12
+});
+L.tileLayer('https://api.mapbox.com/styles/v1/pelaaa/clotp9wbk008c01rb67az2r51/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoicGVsYWFhIiwiYSI6ImNsb2l5cmNpZzAwcGgycnNiemJtaWxqMDkifQ.967YNW-6DomdkPc6X2yD_A',{
+	maxZoom:17,
+	}).addTo(map);
+
+
+
+
+fetch('https://raw.githubusercontent.com/pelaaaa/geog_371_lab_3/main/nyc_mcdonalds.geojson')
+        .then(function(response){
+            return response.json();
+        })
+        .then(function(json){
+            createPropSymbols(json);
+        })
+
+
+function createPropSymbols(data){
+	var geojsonMarkerOptions = {
+		radius:8,
+		fillColor:'yellow',
+		color:'black',
+		weight:1,
+		opacity:1,
+		fillOpacity:0.8
+	};
+	
+	L.geoJson(data,{
+		onEachFeature:eachFeature,
+		pointToLayer:function(feature,latlng){
+			var attValue = Number(feature.properties.SALESVOL);
+			geojsonMarkerOptions.radius = calcPropRadius(attValue)
+			return L.circleMarker(latlng,geojsonMarkerOptions);
+		}
+	}).addTo(map);
+};
+
+function calcPropRadius(attValue){
+	var minRadius = 2;
+	var radius = 1.0083 * Math.pow(attValue/471, 0.5715)* minRadius
+	
+	return radius;
+};
+
+function eachFeature(feature,layer){
+	var popupContent = feature.properties.STREET+"<br>Sales volume: $"+feature.properties.SALESVOL;
+	layer.bindPopup(popupContent)
+	};
+	
+	
+	</script>
+	<br>
+	<hr>
+</body>
+
+</html>
